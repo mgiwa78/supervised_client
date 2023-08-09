@@ -96,6 +96,7 @@ const CreateStudent: React.FC<Props> = ({className}) => {
         role: 'Student',
         password: values.password,
       }
+
       formik.resetForm()
       setSubmitting(true)
       setLoading(false)
