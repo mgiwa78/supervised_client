@@ -7,5 +7,5 @@ const path =
 
 const API_URL = path
 const ASSETS_URL = path + 'uploads/'
-
+////
 export {API_URL, ASSETS_URL}
