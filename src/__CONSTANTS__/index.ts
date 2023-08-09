@@ -2,7 +2,7 @@ const path =
   process.env.NODE_ENV === 'development'
     ? 'http://localhost:6001/'
     : process.env.NODE_ENV === 'production'
-    ? 'https://showroom-api.vercel.app/'
+    ? 'https://supervised-api.vercel.app/'
     : ''
 
 const API_URL = path

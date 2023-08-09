@@ -1,96 +1,107 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {KTIcon, toAbsoluteUrl} from '../../helpers'
 
 import * as Yup from 'yup'
 import {useFormik} from 'formik'
+import post from '@lib/post'
+import {selectUserToken} from '@stores/auth/authSlector'
+import {useSelector} from 'react-redux'
+import get from '@lib/get'
 type Props = {
   className: string
 }
-interface IProfileDetails {
+export interface IProfileDetails {
   avatar: string
-  fName: string
-  lName: string
-  company: string
-  contactPhone: string
-  companySite: string
-  country: string
-  language: string
-  timeZone: string
-  currency: string
-  communications: {
-    email: boolean
-    phone: boolean
-  }
-  allowMarketing: boolean
+  _id: string
+  createdAt: string
+  firstName: string
+  lastName: string
+  contactNumber: string
+  email: string
+  address: string
+  degree?: string
+  department: TDepartment
+  password: string
 }
 
 const initialValue = {
-  avatar: '/media/avatars/300-1.jpg',
-  fName: 'Max',
-  lName: 'Smith',
-  company: 'Keenthemes',
-  contactPhone: '044 3276 454 935',
-  companySite: 'keenthemes.com',
-  country: '',
-  language: '',
-  timeZone: '',
-  currency: '',
-  communications: {
-    email: false,
-    phone: false,
+  avatar: '',
+  firstName: '',
+  _id: '0',
+  lastName: '',
+  createdAt: '',
+  email: '',
+  contactNumber: '',
+  department: {
+    name: '',
+    _id: '',
   },
-  allowMarketing: false,
+  address: '',
+  degree: '',
+  password: '',
 }
 
 const profileDetailsSchema = Yup.object().shape({
-  fName: Yup.string().required('First name is required'),
-  lName: Yup.string().required('Last name is required'),
-  company: Yup.string().required('Company name is required'),
-  contactPhone: Yup.string().required('Contact phone is required'),
-  companySite: Yup.string().required('Company site is required'),
-  country: Yup.string().required('Country is required'),
-  language: Yup.string().required('Language is required'),
-  timeZone: Yup.string().required('Time zone is required'),
-  currency: Yup.string().required('Currency is required'),
+  firstName: Yup.string().required('First name is required'),
+  lastName: Yup.string().required('Last name is required'),
+  department: Yup.string().required('Department is required'),
+  contactNumber: Yup.string().required('Contact phone is required'),
+  email: Yup.string().required('Contact email is required'),
+  password: Yup.string().required('Password is required'),
 })
+export interface TDepartment {
+  name: string
+  _id: string
+}
 
 const CreateStudent: React.FC<Props> = ({className}) => {
-  const [data, setData] = useState<IProfileDetails>({
-    avatar: '/media/avatars/300-1.jpg',
-    fName: 'Max',
-    lName: 'Smith',
-    company: 'Keenthemes',
-    contactPhone: '044 3276 454 935',
-    companySite: 'keenthemes.com',
-    country: '',
-    language: '',
-    timeZone: '',
-    currency: '',
-    communications: {
-      email: false,
-      phone: false,
-    },
-    allowMarketing: false,
-  })
+  const userToken = useSelector(selectUserToken)
+  const [departments, setDepartments] = useState<Array<TDepartment>>([])
+
+  const [data, setData] = useState<IProfileDetails>(initialValue)
+
   const updateData = (fieldsToUpdate: Partial<IProfileDetails>): void => {
     const updatedData = Object.assign(data, fieldsToUpdate)
     setData(updatedData)
   }
 
   const [loading, setLoading] = useState(false)
+
+  const handleFetchProducts = async () => {
+    const data = await get('departments', userToken)
+    if (data) {
+      setDepartments(data)
+    }
+  }
+
+  useEffect(() => {
+    handleFetchProducts()
+  }, [])
+
   const formik = useFormik<IProfileDetails>({
     initialValues: initialValue,
     validationSchema: profileDetailsSchema,
-    onSubmit: (values) => {
+
+    onSubmit: async (values, {setSubmitting}) => {
       setLoading(true)
-      setTimeout(() => {
-        values.communications.email = data.communications.email
-        values.communications.phone = data.communications.phone
-        values.allowMarketing = data.allowMarketing
-        const updatedData = Object.assign(data, values)
-        setData(updatedData)
-        setLoading(false)
-      }, 1000)
+      setSubmitting(false)
+
+      const data = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        contactNumber: values.contactNumber,
+        email: values.email,
+        department: values.department,
+        address: values.address,
+        role: 'Student',
+        password: values.password,
+      }
+      formik.resetForm()
+      setSubmitting(true)
+      setLoading(false)
+
+      return
+      await post('users', data, userToken, true, 'User created successfully')
     },
   })
 
@@ -109,22 +120,6 @@ const CreateStudent: React.FC<Props> = ({className}) => {
           <form onSubmit={formik.handleSubmit} noValidate className='form'>
             <div className='card-body border-top p-9'>
               <div className='row mb-6'>
-                <label className='col-lg-4 col-form-label fw-bold fs-6'>Profile</label>
-                <div className='col-lg-8'>
-                  <div
-                    className='image-input image-input-outline'
-                    data-kt-image-input='true'
-                    style={{backgroundImage: `url(${toAbsoluteUrl('/media/avatars/blank.png')})`}}
-                  >
-                    <div
-                      className='image-input-wrapper w-125px h-125px'
-                      style={{backgroundImage: `url(${toAbsoluteUrl(data.avatar)})`}}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className='row mb-6'>
                 <label className='col-lg-4 col-form-label required fw-bold fs-6'>Full Name</label>
 
                 <div className='col-lg-8'>
@@ -134,11 +129,11 @@ const CreateStudent: React.FC<Props> = ({className}) => {
                         type='text'
                         className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                         placeholder='First name'
-                        {...formik.getFieldProps('fName')}
+                        {...formik.getFieldProps('firstName')}
                       />
-                      {formik.touched.fName && formik.errors.fName && (
+                      {formik.touched.firstName && formik.errors.firstName && (
                         <div className='fv-plugins-message-container'>
-                          <div className='fv-help-block'>{formik.errors.fName}</div>
+                          <div className='fv-help-block'>{formik.errors.firstName}</div>
                         </div>
                       )}
                     </div>
@@ -148,11 +143,11 @@ const CreateStudent: React.FC<Props> = ({className}) => {
                         type='text'
                         className='form-control form-control-lg form-control-solid'
                         placeholder='Last name'
-                        {...formik.getFieldProps('lName')}
+                        {...formik.getFieldProps('lastName')}
                       />
-                      {formik.touched.lName && formik.errors.lName && (
+                      {formik.touched.lastName && formik.errors.lastName && (
                         <div className='fv-plugins-message-container'>
-                          <div className='fv-help-block'>{formik.errors.lName}</div>
+                          <div className='fv-help-block'>{formik.errors.lastName}</div>
                         </div>
                       )}
                     </div>
@@ -161,18 +156,24 @@ const CreateStudent: React.FC<Props> = ({className}) => {
               </div>
 
               <div className='row mb-6'>
-                <label className='col-lg-4 col-form-label required fw-bold fs-6'>Company</label>
+                <label className='col-lg-4 col-form-label required fw-bold fs-6'>Department</label>
 
                 <div className='col-lg-8 fv-row'>
-                  <input
-                    type='text'
-                    className='form-control form-control-lg form-control-solid'
-                    placeholder='Company name'
-                    {...formik.getFieldProps('company')}
-                  />
-                  {formik.touched.company && formik.errors.company && (
+                  <select
+                    className='form-select form-select-solid form-select-lg fw-bold'
+                    {...formik.getFieldProps('department')}
+                  >
+                    <option value=''>Select a Department...</option>
+
+                    {departments.map((department) => (
+                      <option key={department._id} value={department._id}>
+                        {department.name}
+                      </option>
+                    ))}
+                  </select>
+                  {formik.touched.department && formik.errors.department && (
                     <div className='fv-plugins-message-container'>
-                      <div className='fv-help-block'>{formik.errors.company}</div>
+                      <div className='fv-help-block'>{formik.errors.department.name}</div>
                     </div>
                   )}
                 </div>
@@ -188,11 +189,11 @@ const CreateStudent: React.FC<Props> = ({className}) => {
                     type='tel'
                     className='form-control form-control-lg form-control-solid'
                     placeholder='Phone number'
-                    {...formik.getFieldProps('contactPhone')}
+                    {...formik.getFieldProps('contactNumber')}
                   />
-                  {formik.touched.contactPhone && formik.errors.contactPhone && (
+                  {formik.touched.contactNumber && formik.errors.contactNumber && (
                     <div className='fv-plugins-message-container'>
-                      <div className='fv-help-block'>{formik.errors.contactPhone}</div>
+                      <div className='fv-help-block'>{formik.errors.contactNumber}</div>
                     </div>
                   )}
                 </div>
@@ -200,166 +201,40 @@ const CreateStudent: React.FC<Props> = ({className}) => {
 
               <div className='row mb-6'>
                 <label className='col-lg-4 col-form-label fw-bold fs-6'>
-                  <span className='required'>Company Site</span>
+                  <span className='required'>Contact Email</span>
                 </label>
 
                 <div className='col-lg-8 fv-row'>
                   <input
                     type='text'
                     className='form-control form-control-lg form-control-solid'
-                    placeholder='Company website'
-                    {...formik.getFieldProps('companySite')}
+                    placeholder='Enter contact email'
+                    {...formik.getFieldProps('email')}
                   />
-                  {formik.touched.companySite && formik.errors.companySite && (
+                  {formik.touched.email && formik.errors.email && (
                     <div className='fv-plugins-message-container'>
-                      <div className='fv-help-block'>{formik.errors.companySite}</div>
+                      <div className='fv-help-block'>{formik.errors.email}</div>
                     </div>
                   )}
                 </div>
               </div>
-
               <div className='row mb-6'>
                 <label className='col-lg-4 col-form-label fw-bold fs-6'>
-                  <span className='required'>Country</span>
+                  <span className='required'>Password</span>
                 </label>
 
                 <div className='col-lg-8 fv-row'>
-                  <select
-                    className='form-select form-select-solid form-select-lg fw-bold'
-                    {...formik.getFieldProps('country')}
-                  >
-                    <option value=''>Select a Country...</option>
-                    <option value='AF'>Afghanistan</option>
-                  </select>
-                  {formik.touched.country && formik.errors.country && (
+                  <input
+                    type='text'
+                    className='form-control form-control-lg form-control-solid'
+                    placeholder='Password'
+                    {...formik.getFieldProps('password')}
+                  />
+                  {formik.touched.password && formik.errors.password && (
                     <div className='fv-plugins-message-container'>
-                      <div className='fv-help-block'>{formik.errors.country}</div>
+                      <div className='fv-help-block'>{formik.errors.password}</div>
                     </div>
                   )}
-                </div>
-              </div>
-
-              <div className='row mb-6'>
-                <label className='col-lg-4 col-form-label required fw-bold fs-6'>Language</label>
-                <div className='col-lg-8 fv-row'>
-                  <select
-                    className='form-select form-select-solid form-select-lg'
-                    {...formik.getFieldProps('language')}
-                  >
-                    <option value=''>Select a Language...</option>
-                    <option value='zh-tw'>繁體中文 - Traditional Chinese</option>
-                  </select>
-                  {formik.touched.language && formik.errors.language && (
-                    <div className='fv-plugins-message-container'>
-                      <div className='fv-help-block'>{formik.errors.language}</div>
-                    </div>
-                  )}
-
-                  <div className='form-text'>
-                    Please select a preferred language, including date, time, and number formatting.
-                  </div>
-                </div>
-              </div>
-
-              <div className='row mb-6'>
-                <label className='col-lg-4 col-form-label required fw-bold fs-6'>Time Zone</label>
-
-                <div className='col-lg-8 fv-row'>
-                  <select
-                    className='form-select form-select-solid form-select-lg'
-                    {...formik.getFieldProps('timeZone')}
-                  >
-                    <option value=''>Select a Timezone..</option>
-
-                    <option value="Nuku'alofa">(GMT+13:00) Nuku'alofa</option>
-                  </select>
-                  {formik.touched.timeZone && formik.errors.timeZone && (
-                    <div className='fv-plugins-message-container'>
-                      <div className='fv-help-block'>{formik.errors.timeZone}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className='row mb-6'>
-                <label className='col-lg-4 col-form-label required fw-bold fs-6'>Currency</label>
-
-                <div className='col-lg-8 fv-row'>
-                  <select
-                    className='form-select form-select-solid form-select-lg'
-                    {...formik.getFieldProps('currency')}
-                  >
-                    <option value=''>Select a currency..</option>
-                    <option value='USD'>USD - USA dollar</option>
-                  </select>
-                  {formik.touched.currency && formik.errors.currency && (
-                    <div className='fv-plugins-message-container'>
-                      <div className='fv-help-block'>{formik.errors.currency}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className='row mb-6'>
-                <label className='col-lg-4 col-form-label fw-bold fs-6'>Communication</label>
-
-                <div className='col-lg-8 fv-row'>
-                  <div className='d-flex align-items-center mt-3'>
-                    <label className='form-check form-check-inline form-check-solid me-5'>
-                      <input
-                        className='form-check-input'
-                        name='communication[]'
-                        type='checkbox'
-                        defaultChecked={data.communications?.email}
-                        onChange={() => {
-                          updateData({
-                            communications: {
-                              email: !data.communications?.email,
-                              phone: data.communications?.phone,
-                            },
-                          })
-                        }}
-                      />
-                      <span className='fw-bold ps-2 fs-6'>Email</span>
-                    </label>
-
-                    <label className='form-check form-check-inline form-check-solid'>
-                      <input
-                        className='form-check-input'
-                        name='communication[]'
-                        type='checkbox'
-                        defaultChecked={data.communications?.phone}
-                        onChange={() => {
-                          updateData({
-                            communications: {
-                              email: data.communications?.email,
-                              phone: !data.communications?.phone,
-                            },
-                          })
-                        }}
-                      />
-                      <span className='fw-bold ps-2 fs-6'>Phone</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className='row mb-0'>
-                <label className='col-lg-4 col-form-label fw-bold fs-6'>Allow Marketing</label>
-
-                <div className='col-lg-8 d-flex align-items-center'>
-                  <div className='form-check form-check-solid form-switch fv-row'>
-                    <input
-                      className='form-check-input w-45px h-30px'
-                      type='checkbox'
-                      id='allowmarketing'
-                      defaultChecked={data.allowMarketing}
-                      onChange={() => {
-                        updateData({allowMarketing: !data.allowMarketing})
-                      }}
-                    />
-                    <label className='form-check-label'></label>
-                  </div>
                 </div>
               </div>
             </div>
