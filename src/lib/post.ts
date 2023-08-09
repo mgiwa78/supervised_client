@@ -21,7 +21,7 @@ const post = async (
 
     isPrompt &&
       MySwal.fire({
-        text: 'Created Successfully',
+        text: prompt,
         icon: 'success',
         buttonsStyling: false,
         confirmButtonText: 'Ok!',
