@@ -41,7 +41,7 @@ export function Login() {
       setLoading(true)
       const data = {email: values.email, password: values.password}
       try {
-        const LOGIN_RESPONSE = await post('auth/signin', data)
+        const LOGIN_RESPONSE = await post('auth/signin', data, '', true, 'Logged in Successfully')
 
         dispatch(setAuth(LOGIN_RESPONSE.data))
         navigate('/')
