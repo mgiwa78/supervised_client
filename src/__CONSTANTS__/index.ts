@@ -1,6 +1,6 @@
 const path =
   process.env.NODE_ENV === 'development'
-    ? 'https://supervised-api.vercel.app/'
+    ? 'http://localhost:6001/'
     : process.env.NODE_ENV === 'production'
     ? 'https://supervised-api.vercel.app/'
     : ''
