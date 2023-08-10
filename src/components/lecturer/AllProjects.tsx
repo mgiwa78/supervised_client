@@ -161,8 +161,8 @@ const AllProjects: React.FC<Props> = ({className}) => {
               <tr className='fw-bold text-muted bg-light'>
                 <th className='ps-4 min-w-325px rounded-start'>Title</th>
                 <th className='min-w-125px'>Progress</th>
-                <th className='min-w-125px'>Deposit</th>
-                <th className='min-w-120px'>Agent</th>
+                <th className='min-w-125px'>Deparment</th>
+                <th className='min-w-120px'>Grade</th>
                 <th className='min-w-120px text-end rounded-end'></th>
               </tr>
             </thead>
