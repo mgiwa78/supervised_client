@@ -120,22 +120,6 @@ const CreateLecturer: React.FC<Props> = ({className}) => {
           <form onSubmit={formik.handleSubmit} noValidate className='form'>
             <div className='card-body border-top p-9'>
               <div className='row mb-6'>
-                <label className='col-lg-4 col-form-label fw-bold fs-6'>Profile</label>
-                <div className='col-lg-8'>
-                  <div
-                    className='image-input image-input-outline'
-                    data-kt-image-input='true'
-                    style={{backgroundImage: `url(${toAbsoluteUrl('/media/avatars/blank.png')})`}}
-                  >
-                    <div
-                      className='image-input-wrapper w-125px h-125px'
-                      style={{backgroundImage: `url(${toAbsoluteUrl(data.avatar)})`}}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className='row mb-6'>
                 <label className='col-lg-4 col-form-label required fw-bold fs-6'>Full Name</label>
 
                 <div className='col-lg-8'>

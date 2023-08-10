@@ -67,7 +67,7 @@ const CreateStudent: React.FC<Props> = ({className}) => {
 
   const [loading, setLoading] = useState(false)
 
-  const handleFetchProducts = async () => {
+  const handleFetchDepartments = async () => {
     const data = await get('departments', userToken)
     if (data) {
       setDepartments(data)
@@ -75,7 +75,7 @@ const CreateStudent: React.FC<Props> = ({className}) => {
   }
 
   useEffect(() => {
-    handleFetchProducts()
+    handleFetchDepartments()
   }, [])
 
   const formik = useFormik<IProfileDetails>({

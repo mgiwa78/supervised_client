@@ -6,12 +6,39 @@ import RecentImpressions from '../RecentImpressions'
 import get from '@lib/get'
 import {useSelector} from 'react-redux'
 import {selectUserToken} from '@stores/auth/authSlector'
+import {IProfileDetails, TDepartment} from './CreateLecturer'
 
 const AdminDasboard = () => {
   const userToken = useSelector(selectUserToken)
-  const [productsCount, setProductCount] = useState(0)
-  const [categoriesCount, setCategorieCount] = useState(0)
-  const [usersCount, setUsersCount] = useState(0)
+  const [lecturerCount, setLecturerCount] = useState(0)
+  const [studentCount, setStudentCount] = useState(0)
+  const [departments, setDepartments] = useState<Array<TDepartment>>([])
+
+  const handleFetchProducts = async () => {
+    const RESPONSE = await get('users', userToken)
+    if (RESPONSE) {
+      const Ldata = RESPONSE.filter((data: any) => {
+        return data.roles.includes('Lecturer')
+      })
+      const Sdata = RESPONSE.filter((data: any) => {
+        return data.roles.includes('Student')
+      })
+
+      setLecturerCount(Ldata.lenght)
+      setStudentCount(Sdata.lenght)
+    }
+  }
+  const handleFetchDepartments = async () => {
+    const data = await get('departments', userToken)
+    if (data) {
+      setDepartments(data)
+    }
+  }
+  useEffect(() => {}, [])
+  useEffect(() => {
+    handleFetchProducts()
+    handleFetchDepartments()
+  }, [])
 
   // const fetchDashboardData = async () => {
   //   const products = await get('products', userToken)
@@ -40,7 +67,7 @@ const AdminDasboard = () => {
               svgIcon='user'
               color='danger'
               iconColor='white'
-              title={`0`}
+              title={`1`}
               titleColor='white'
               description='Admins'
               descriptionColor='white'
@@ -53,7 +80,7 @@ const AdminDasboard = () => {
               svgIcon='cheque'
               color='primary'
               iconColor='white'
-              title={`0`}
+              title={`${studentCount}`}
               titleColor='white'
               description='Students'
               descriptionColor='white'
@@ -66,7 +93,7 @@ const AdminDasboard = () => {
               svgIcon='chart-simple-3'
               color='success'
               iconColor='white'
-              title={`0`}
+              title={`${lecturerCount}`}
               titleColor='white'
               description='Lecturers'
               descriptionColor='white'
