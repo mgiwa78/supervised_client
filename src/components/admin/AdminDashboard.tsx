@@ -24,8 +24,8 @@ const AdminDasboard = () => {
         return data.roles.includes('Student')
       })
 
-      setLecturerCount(Ldata.lenght)
-      setStudentCount(Sdata.lenght)
+      setLecturerCount(Ldata.length)
+      setStudentCount(Sdata.length)
     }
   }
   const handleFetchDepartments = async () => {
