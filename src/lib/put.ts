@@ -72,6 +72,17 @@ const put = async (
           confirmButton: 'btn btn-danger',
         },
       }).then(() => {})
+    } else {
+      MySwal.fire({
+        text: error.message,
+        icon: 'error',
+        buttonsStyling: false,
+        confirmButtonText: 'Ok!',
+        heightAuto: false,
+        customClass: {
+          confirmButton: 'btn btn-danger',
+        },
+      })
     }
   }
 }
